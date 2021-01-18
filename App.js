@@ -5,7 +5,9 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const db = require('./models');
+const qr = require('./querys/querys');
 const uuid = require('./utils/uuid');
+const setToken = require('./utils/setToken');
 
 dotenv.config();
 
@@ -52,9 +54,8 @@ app.get('/movie', (req, res) => {
 });
 
 app.post('/login', (req, res) => {
-  const getCookie = req.cookies.tid;
+  const tid = req.cookies.tid;
   const email = req.body.email;
-  const tid = getCookie.split(' ')[0];
   const loginID = uuid();
   db.users.update({ browserid: tid, loginid: loginID, loginAt: new Date() }, { where: { email: email } });
   res.send(loginID);
@@ -62,8 +63,9 @@ app.post('/login', (req, res) => {
 
 app.get('/confirm', (req, res) => {
   const loginID = req.query.token;
-  const user = db.users.findOne({}, { where: loginID });
-  console.log(user);
+  console.log(loginID);
+  const user = qr.getUser(loginID);
+  user.then((result) => setToken(result)).then((token) => res.send(token));
 });
 
 app.post('/register', (req, res) => {
