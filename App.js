@@ -65,7 +65,21 @@ app.get('/confirm', (req, res) => {
   const loginID = req.query.token;
   console.log(loginID);
   const user = qr.getUser(loginID);
-  user.then((result) => setToken(result)).then((token) => res.send(token));
+  const secretKey = process.env.secretkey;
+  user
+    .then((result) => setToken(result, secretKey))
+    .then((token) => {
+      console.log('Success! send Toekn!');
+      res.cookie('token', token);
+      res.status(201).json({
+        result: 'OK',
+        token,
+      });
+    })
+    .catch((err) => {
+      console.log(err);
+      res.status(500).send('Confrim Info Expire');
+    });
 });
 
 app.post('/register', (req, res) => {
