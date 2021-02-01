@@ -5,4 +5,4 @@ async function getUser(loginID) {
   return user;
 }
 
-module.exports.getUser = getUser;
+module.exports = getUser;

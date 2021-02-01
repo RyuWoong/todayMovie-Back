@@ -1,34 +1,29 @@
 module.exports = (sequelize, DataTypes) => {
   return sequelize.define(
-    'users',
+    'reviews',
     {
-      uuid: {
-        type: DataTypes.UUID(),
+      userID: {
+        type: DataTypes.INTEGER(11),
         allowNull: false,
       },
-      email: {
-        type: DataTypes.STRING(50),
-        allowNull: false,
-        unique: true,
-      },
-      name: {
-        type: DataTypes.STRING(10),
+      movieID: {
+        type: DataTypes.INTEGER(11),
         allowNull: false,
       },
-      loginid: {
-        type: DataTypes.UUID(),
+      rating: {
+        type: DataTypes.INTEGER(1),
+        allowNull: false,
+      },
+      content: {
+        type: DataTypes.TEXT(),
         allowNull: true,
       },
-      browserid: {
-        type: DataTypes.UUID(),
-        allowNull: true,
-      },
-      createAt: {
+      writeAt: {
         type: DataTypes.DATE(),
         allowNull: false,
       },
-      loginAt: {
-        type: DataTypes.DATE(),
+      platform: {
+        type: DataTypes.INTEGER(1),
         allowNull: true,
       },
     },
@@ -36,7 +31,7 @@ module.exports = (sequelize, DataTypes) => {
       timestamps: false,
       charset: 'utf8',
       collate: 'utf8_general_ci',
-      tableName: 'users',
+      tableName: 'reviews',
       dialectOptions: { charset: 'utf8mb4', dateStrings: true, typeCast: true }, // 날짜의 경우 문자열로 타입 변경 처리
       timezone: '+09:00', // 타임존을 설정
     },

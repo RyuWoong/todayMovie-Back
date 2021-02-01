@@ -5,7 +5,7 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const db = require('./models');
-const qr = require('./querys/querys');
+const qr = require('./querys');
 const uuid = require('./utils/uuid');
 const setToken = require('./utils/setToken');
 
@@ -53,6 +53,18 @@ app.get('/movie', (req, res) => {
     });
 });
 
+app.get('/review', (req, res) => {
+  movieID = req.query.movieID;
+  if ((movieID = null)) {
+    res.status(500).send('MovieID Null');
+  } else {
+    const reviews = qr.getReview(movieID);
+    reviews.then((result) => {
+      res.status(201).json({ result: 'OK', data: result });
+    });
+  }
+});
+
 app.post('/login', (req, res) => {
   const tid = req.cookies.tid;
   const email = req.body.email;
@@ -69,7 +81,7 @@ app.get('/confirm', (req, res) => {
   user
     .then((result) => setToken(result, secretKey))
     .then((token) => {
-      console.log('Success! send Toekn!');
+      console.log('Success! send Token!');
       res.cookie('token', token);
       res.status(201).json({
         result: 'OK',

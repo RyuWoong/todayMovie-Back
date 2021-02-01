@@ -12,6 +12,7 @@ if (config.use_env_variable) {
 }
 
 db.users = require('./users')(sequelize, Sequelize);
+db.reviews = require('./reviews')(sequelize, Sequelize);
 
 Object.keys(db).forEach((modelName) => {
   if (db[modelName].associate) {
