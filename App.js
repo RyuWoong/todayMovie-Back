@@ -54,12 +54,14 @@ app.get('/movie', (req, res) => {
 });
 
 app.get('/review', (req, res) => {
-  movieID = req.query.movieID;
-  if ((movieID = null)) {
+  console.log(req.query);
+  const movieID = req.query.movieID;
+  if (movieID == null) {
     res.status(500).send('MovieID Null');
   } else {
     const reviews = qr.getReview(movieID);
     reviews.then((result) => {
+      console.log(result);
       res.status(201).json({ result: 'OK', data: result });
     });
   }
