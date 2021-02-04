@@ -8,10 +8,12 @@ const db = require('./models');
 const qr = require('./querys');
 const uuid = require('./utils/uuid');
 const setToken = require('./utils/setToken');
+const { request } = require('express');
 
 dotenv.config();
 
 const MovieURL = process.env.MovieURL;
+const apiKey = process.env.TMDB_KEY;
 
 //Start Experess
 const app = express();
@@ -24,32 +26,52 @@ app.use(
     origin: ['http://localhost:3000', 'todaymovie.net'],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     preflightContinue: false,
-    optionsSuccessStatus: 204,
+    optionsSuccessStatus: 201,
     credentials: true,
   }),
 );
 
-app.get('/movie', (req, res) => {
+app.get('/searchmovie', (req, res) => {
+  console.log(req.query);
   axios({
     method: 'GET',
-    url: MovieURL,
-    params: { query: req.query.movieNm, display: 10 },
-    headers: { 'X-Naver-Client-Id': process.env.ClientId, 'X-Naver-Client-Secret': process.env.ClientSecret },
+    baseURL: MovieURL,
+    url: '/search/movie',
+    params: {
+      api_key: apiKey,
+      language: 'ko',
+      region: 'ko',
+      query: req.query.movieNm,
+    },
   })
-    .then((request) => {
-      return request.data;
+    .then((result) => {
+      console.log('영화검색 성공', result.data);
+      res.status(200).json(result.data.results);
     })
-    .then((data) => {
-      return data.items;
+    .catch((result) => {
+      console.log('영화검색 실패', result.data);
+      res.status(500).send(false);
+    });
+});
+
+app.get('/movie', (req, res) => {
+  const movieID = req.query.movieID;
+  const url = `/movie/${movieID}`;
+  axios({
+    method: 'GET',
+    baseURL: MovieURL,
+    url: url,
+    params: {
+      api_key: apiKey,
+      language: 'ko',
+      region: 'ko',
+    },
+  })
+    .then((result) => {
+      res.status(200).json(result.data);
     })
-    .then((items) => {
-      console.log('영화 검색 성공');
-      res.send(items);
-    })
-    .catch((request) => {
-      console.log('영화검색 실패');
-      console.log(request);
-      res.send(false);
+    .catch((result) => {
+      res.status(500).json('Failed Get Movie Info');
     });
 });
 
@@ -57,21 +79,34 @@ app.get('/review', (req, res) => {
   console.log(req.query);
   const movieID = req.query.movieID;
   if (movieID == null) {
-    res.status(500).send('MovieID Null');
+    res.status(500).send('Miss MovieID');
   } else {
     const reviews = qr.getReview(movieID);
     reviews.then((result) => {
-      console.log(result);
       res.status(201).json({ result: 'OK', data: result });
     });
   }
+});
+
+app.get('/myreview', (req, res) => {
+  console.log(req.cookies);
+  console.log(req.query);
+  const userID = 2;
+  const movieID = req.query.movieID;
+  const myReview = qr.getMyReview(userID, movieID);
+  myReview.then((result) => {
+    res.status(201).json({ result: 'OK', data: result });
+  });
 });
 
 app.post('/login', (req, res) => {
   const tid = req.cookies.tid;
   const email = req.body.email;
   const loginID = uuid();
-  db.users.update({ browserid: tid, loginid: loginID, loginAt: new Date() }, { where: { email: email } });
+  db.users.update(
+    { browserid: tid, loginid: loginID, loginAt: new Date() },
+    { where: { email: email } },
+  );
   res.send(loginID);
 });
 
@@ -98,7 +133,12 @@ app.get('/confirm', (req, res) => {
 
 app.post('/register', (req, res) => {
   console.log(req.body);
-  db.users.create({ uuid: uuid(), email: req.body.email, name: req.body.name, createAt: new Date() });
+  db.users.create({
+    uuid: uuid(),
+    email: req.body.email,
+    name: req.body.name,
+    createAt: new Date(),
+  });
   res.send(req.body);
 });
 
