@@ -95,8 +95,14 @@ app.get('/myreview', (req, res) => {
   const movieID = req.query.movieID;
   const myReview = qr.getMyReview(userID, movieID);
   myReview.then((result) => {
-    res.status(201).json({ result: 'OK', data: result });
+    res.status(200).json({ result: 'OK', data: result });
   });
+});
+
+app.post('/review', (req, res) => {
+  console.log(req.cookies);
+  console.log('리뷰 작성 정보 :', req.body);
+  res.status(201).send('리뷰 정보 성공');
 });
 
 app.post('/login', (req, res) => {
